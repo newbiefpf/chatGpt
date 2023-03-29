@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- <chatGroup v-if!="false" /> -->
+    <!-- <chatGroup /> -->
     <ChatBox />
   </div>
 </template>

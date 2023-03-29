@@ -23,7 +23,7 @@
                 alt=""
                 style="width: 30px; height: 30px; margin-right: 30px"
               />
-              <div v-html="highlightCode(item.content)" v-highlight></div>
+              <div class="text" v-html="highlightCode(item.content)"></div>
             </div>
           </div>
         </div>
@@ -50,17 +50,25 @@
 </template>
 <script>
 import axios from "axios";
-// import hljs from "highlight.js";
+import hljs from "highlight.js";
+import "highlight.js/styles/vs2015.css"; // 根据需要选择样式
+import javascript from "highlight.js/lib/languages/javascript";
+hljs.registerLanguage("javascript", javascript); // 注册 JavaScript 语言包
+import { message } from "./cs.js";
 export default {
   name: "ChatBox",
   data() {
     return {
       messages: [
-        // {
-        //   role: "user",
-        //   content:
-        //     'JS闭包：\n\n```html\nfunction outerFunction() {\n  var message = "Hello World!"; // 私有变量\n  function innerFunction() {    // 内部函数\n    console.log(message);\n  }\n  return innerFunction;         // 返回内部函数\n}\n\nvar myFunc = outerFunction();   // 保存内部函数到myFunc变量中\nmyFunc();                       // 调用内部函数，输出"Hello World!"\n```',
-        // },
+        {
+          role: "user",
+          content: message.content,
+        },
+        {
+          role: "assistant",
+          content:
+            "去美国的攻略可以大致分为以下几个步骤：\n\n1.办理签证：\n\n首先，需要办理美国签证。具体流程和申请材料可以参考美国驻华大使馆官网。在提交申请材料之前，需要预约面试时间和地点，并支付签证费用。\n\n2.购买机票：\n\n在办理签证之后，就可以开始购买机票。可以通过航空公司官网或者第三方机票代理网站进行购票比价。\n\n3.准备行程：\n\n在确定好行程之后，需要准备相应的行程材料，包括酒店预订证明、行程计划、机票预订信息等。\n\n4.了解美国文化：\n\n在前往美国之前，需要了解一些美国文化和礼仪，以便更好地适应当地生活。\n\n5.购买旅游保险：\n\n在前往美国旅游之前，建议购买旅游保险，以防意外情况发生。\n\n6.兑换货币：\n\n在前往美国之前，需要了解美国的货币和汇率，并兑换相应的货币。\n\n7.制定购物计划：\n\n除了旅游景点和美食，美国的购物也是旅游者不容错过的特色。可以提前制定购物计划，并准备好足够的购物预算。\n\n8.出发：\n\n最后，按照计划出发，开始美国之旅。",
+        },
         {
           role: "user",
           content:
@@ -72,6 +80,7 @@ export default {
       code: "",
     };
   },
+
   watch: {
     messages: {
       //深度监听，可监听到对象、数组的变化
@@ -99,20 +108,38 @@ export default {
     },
     highlightCode(content) {
       const codeBlocks = content.match(/```[\s\S]*?```/g); // 匹配所有代码块
-      if (!codeBlocks) return content; // 如果没有代码块则直接返回原文本
+      if (!codeBlocks) {
+        content = content.replace(
+          content,
+          `<pre>
+          <code >${content}</code>
+          </pre>`
+        ); // 替换原文本中的代码块为高亮后的HTML
+        return content; // 如果没有代码块则直接返回原文本
+      }
       codeBlocks.forEach((codeBlock) => {
-        // const lang = codeBlock.match(/```(\S+)/)[1]; // 获取语言类型
-        const code = codeBlock; // 使用highlight.js对代码块进行高亮
-        this.code = code;
-        console.log(codeBlock);
+        var lang; // 获取语言类型
+
+        if (codeBlock.match(/```(\S+)/)) {
+          lang = codeBlock.match(/```(\S+)/)[1];
+        } else {
+          lang = "html"; // 获取语言类型
+        }
+        const result = codeBlock.replace(/```/g, "");
+        const code = hljs.highlight(lang, result).value; // 使用highlight.js对代码块进行高亮
         content = content.replace(
           codeBlock,
-          `<pre ><code  class="javascript">${code}</code></pre>`
+          `<pre class="code-block-wrapper">
+            <div class="code-block-header">
+              <span class="code-block-header__lang">${lang}</span>
+              <span class="code-block-header__copy" onclick="navigator.clipboard.writeText(event.target.parentNode.parentNode.lastElementChild.innerText);">Copy Code</span></div>
+          <code class="hljs code-block-body ${lang}">${code}</code>
+          </pre>`
         ); // 替换原文本中的代码块为高亮后的HTML
       });
-      console.log(content);
       return content;
     },
+
     // 发送消息
     sendMessage() {
       if (this.replyMessage && this.replyMessage != "") {
@@ -153,6 +180,7 @@ export default {
     },
     //
   },
+  mounted() {},
 };
 </script>
 <style>
@@ -269,8 +297,39 @@ export default {
   resize: none;
   color: inherit;
 }
-
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0em 1em;
+}
 .hljs {
   font-size: 16px;
+}
+.code-block-wrapper {
+  background: #1e1e1e;
+  position: relative;
+  padding-top: -24px;
+}
+.code-block-header {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  width: 100%;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: #b3b3b3;
+}
+.code-block-header__copy {
+  cursor: pointer;
+  margin-left: 0.5rem;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+.text {
+  font-size: 16px;
+  font-weight: bold;
 }
 </style>

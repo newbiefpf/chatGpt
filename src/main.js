@@ -8,6 +8,16 @@ Vue.use(ElementUI) //使用elementUI
 import App from './App.vue'
 import router from './router'
 
+// import Vue from 'vue';
+// import hljs from 'highlight.js';
+// import 'highlight.js/styles/vs2015.css';
+
+// Vue.directive('highlight', function (el) {
+//   let blocks = el.querySelectorAll('pre code');
+//   for (let i = 0; i < blocks.length; i++) {
+//     hljs.highlightBlock(blocks[i]);
+//   }
+// })
 
 
 
